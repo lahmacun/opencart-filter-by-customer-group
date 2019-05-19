@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modification>
+    <name>Lahmacun Filter By Customer Group</name>
+    <version>1.0</version>
+    <author>More Effect Studios</author>
+    <link>http://www.moreeffectstudios.com</link>
+    <code>filter_by_customer_group_lahmacun</code>
+    <file path="admin/model/sale/order.php">
+        <operation>
+            <search trim="true"><![CDATA[
+if (!empty($data['filter_order_id'])) {
+            ]]></search>
+            <add position="after" trim="false" offset="2"><![CDATA[
+
+		if (!empty($data['filter_customer_group_id'])) {
+			$sql .= " AND customer_group_id = '" . (int)$data['filter_customer_group_id'] . "'";
+		}
+            ]]></add>
+        </operation>
+    </file>
+    <file path="admin/controller/sale/order.php">
+        <operation>
+            <search trim="true"><![CDATA[$filter_order_id = $this->request->get['filter_order_id'];]]></search>
+            <add position="after" trim="false" offset="4"><![CDATA[
+    // Filter Customer Group
+    if (isset($this->request->get['filter_customer_group_id'])) {
+        $filter_customer_group_id = $this->request->get['filter_customer_group_id'];
+    } else {
+        $filter_customer_group_id = '';
+    }
+
+           ]]></add>
+        </operation>
+        <operation>
+            <search trim="true"><![CDATA[$url .= '&filter_order_id=' . $this->request->get['filter_order_id'];]]></search>
+            <add position="after" trim="false" offset="2"><![CDATA[
+        // Filter Customer Group
+        if (isset($this->request->get['filter_customer_group_id'])) {
+            $url .= '&filter_customer_group_id=' . $this->request->get['filter_customer_group_id'];
+        }
+        ]]></add>
+        </operation>
+        <operation>
+            <search trim="true"><![CDATA['filter_order_status_id' => $filter_order_status_id,]]></search>
+            <add position="after"><![CDATA[
+            'filter_customer_group_id' => $filter_customer_group_id,]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[$data['filter_order_status_id'] = $filter_order_status_id;]]></search>
+            <add position="after"><![CDATA[
+            $data['filter_customer_group_id'] = $filter_customer_group_id;]]></add>
+        </operation>
+    </file>
+    <file path="admin/view/template/sale/order_list.twig">
+        <operation>
+            <search><![CDATA[$('#button-filter').on('click', function () {]]></search>
+            <add position="after" offset="2"><![CDATA[
+
+            var filter_customer_group_id = $('select[name=\'filter_customer_group_id\']').val();
+
+            if (filter_customer_group_id) {
+                url += '&filter_customer_group_id=' + encodeURIComponent(filter_customer_group_id);
+            }
+
+            ]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[<label class="control-label" for="input-total">{{ entry_total }}</label>]]></search>
+            <add position="before" offset="1"><![CDATA[
+            <div class="form-group">
+                <label class="control-label" for="filter_customer_group">{{ customer_group_text }}</label>
+                <select name="filter_customer_group_id" class="form-control" id="filter_customer_group">
+                    <option value=''></option>
+                    {% for cg in customer_groups %}
+                        <option value="{{ cg.customer_group_id }}" {% if filter_customer_group_id == cg.customer_group_id %}selected{% endif %}>{{ cg.name }}</option>
+                    {% endfor %}>
+                </select>
+            </div>
+            ]]></add>
+        </operation>
+    </file>
+    <file path="admin/language/en-gb/en-gb.php">
+        <operation>
+            <search><![CDATA[<?php]]></search>
+            <add position="after"><![CDATA[$_['customer_group_text'] = 'Customer Group';]]></add>
+        </operation>
+    </file>
+</modification>
